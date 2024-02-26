@@ -9,7 +9,16 @@
  * following line.
  *   cppcheck-suppress nullPointer
  */
+/* Create an new element */
+element_t *create_new_element(char *s)
+{
+    element_t *new_element = malloc(sizeof(element_t));
+    if (new_element == NULL)
+        return NULL;
 
+    new_element->value = s;
+    return new_element;
+}
 
 /* Create an empty queue */
 struct list_head *q_new()
@@ -23,24 +32,62 @@ void q_free(struct list_head *head) {}
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+    // (head->prev)  new_element  head
+    element_t *new_element = create_new_element(s);
+    // cannot allocate space for new element
+    if (new_element == NULL)
+        return false;
+    INIT_LIST_HEAD(&(new_element->list));
+    list_add(&(new_element->list), head);
+
     return true;
 }
 
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    // (head->prev) new_element  head
+    if (!head)
+        return false;
+    element_t *new_element = create_new_element(s);
+    if (new_element == NULL)
+        return false;
+    list_add_tail(&(new_element->list), head->prev);
+
     return true;
 }
 
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    // NULL if queue is NULL or empty
+    if (head == NULL || list_empty(head))
+        return NULL;
+    struct list_head *node = head->next;
+    // find node's address
+    element_t *element = list_entry(node, element_t, list);
+    if (sp != NULL) {
+        memcpy(sp, element->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+    list_del(node);
+    return element;
 }
 
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
+    if (head == NULL || list_empty(head))
+        return NULL;
+    struct list_head *node = head->prev;
+    element_t *element = list_entry(node, element_t, list);
+    if (sp != NULL) {
+        memcpy(sp, element->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+    list_del(node);
     return NULL;
 }
 
