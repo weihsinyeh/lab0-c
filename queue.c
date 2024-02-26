@@ -11,6 +11,7 @@
  * following line.
  *   cppcheck-suppress nullPointer
  */
+/* Create an new element */
 
 /* Create an new element */
 element_t *create_new_element(char *s)
@@ -45,6 +46,7 @@ void remove_element(element_t *element, char *sp, size_t bufsize)
     list_del_init(&(element->list));
 }
 
+
 /* Create an empty queue */
 struct list_head *q_new()
 {
@@ -60,9 +62,6 @@ struct list_head *q_new()
 }
 
 /* Free all storage used by queue */
-<<<<<<< HEAD
-void q_free(struct list_head *head) {}
-=======
 void q_free(struct list_head *l)
 {
     if (!l)
@@ -78,7 +77,6 @@ void q_free(struct list_head *l)
     test_free(l);
     return;
 }
->>>>>>> Implementation of q_new, q_size and q_free
 
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
@@ -91,6 +89,7 @@ bool q_insert_head(struct list_head *head, char *s)
     if (!new_element)
         return false;
 
+
     list_add(&(new_element->list), head);
 
     return true;
@@ -99,6 +98,7 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+
     if (!head)
         return false;
 
@@ -127,6 +127,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
+
     if (!head || list_empty(head))
         return NULL;
 
