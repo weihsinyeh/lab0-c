@@ -14,7 +14,6 @@ element_t *create_new_element(char *s)
 {
     element_t *new_element = (element_t *) malloc(sizeof(element_t));
     if (new_element == NULL) {
-        free(new_element);
         return NULL;
     }
     if (new_element->value == NULL) {
