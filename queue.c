@@ -13,10 +13,9 @@
 element_t *create_new_element(char *s)
 {
     element_t *new_element = (element_t *) malloc(sizeof(element_t));
-    if (new_element == NULL) {
+    if (new_element == NULL)
         return NULL;
-    }
-    // new_element->value = (char *)malloc(sizeof(char));
+
     if (new_element->value == NULL) {
         free(new_element);
         return NULL;
@@ -28,6 +27,15 @@ element_t *create_new_element(char *s)
     }
     INIT_LIST_HEAD(&(new_element->list));
     return new_element;
+}
+
+void remove_element(element_t *element, char *sp, size_t bufsize)
+{
+    if (sp != NULL) {
+        memcpy(sp, element->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+    list_del_init(&(element->list));
 }
 
 /* Create an empty queue */
@@ -52,12 +60,14 @@ void q_free(struct list_head *l)
 {
     if (l == NULL)
         return;
+
     element_t *entry = NULL, *safe = NULL;
     list_for_each_entry_safe (entry, safe, l, list) {
         list_del(&(entry->list));
         free(entry->value);
         free(entry);
     }
+    list_del_init(l);
     free(l);
     return;
 }
@@ -96,17 +106,13 @@ bool q_insert_tail(struct list_head *head, char *s)
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    // NULL if queue is NULL or empty
     if (head == NULL || list_empty(head))
         return NULL;
 
     struct list_head *node = head->next;
     element_t *element = list_entry(node, element_t, list);
-    if (sp != NULL) {
-        memcpy(sp, element->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }
-    list_del_init(node);
+    remove_element(element, sp, bufsize);
+
     return element;
 }
 
@@ -118,22 +124,17 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 
     struct list_head *node = head->prev;
     element_t *element = list_entry(node, element_t, list);
-    if (sp != NULL) {
-        memcpy(sp, element->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }
-    list_del_init(node);
-    // free(node);
+    remove_element(element, sp, bufsize);
+
     return element;
 }
 
 /* Return number of elements in queue */
 int q_size(struct list_head *head)
 {
-    if (head == NULL)
+    if (head == NULL || list_empty(head))
         return 0;
-    if (list_empty(head))
-        return 0;
+
     long count = 0;
     list_for_each (head->next, head)
         count += 1;
@@ -147,6 +148,7 @@ bool q_delete_mid(struct list_head *head)
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
     if (head == NULL || list_empty(head))
         return false;
+
     struct list_head *posptr = head->next;
     struct list_head *negptr = head->prev;
     while (posptr != negptr && posptr->next != negptr) {
@@ -166,8 +168,10 @@ bool q_delete_dup(struct list_head *head)
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
     if (head == NULL || list_empty(head))
         return false;
+
     element_t *entry, *safe;
     bool hasduplicates = false;
+
     list_for_each_entry_safe (entry, safe, head, list) {
         if (&(safe->list) != head && strcmp(entry->value, safe->value) == 0) {
             list_del_init(&(entry->list));
@@ -194,14 +198,16 @@ void q_swap(struct list_head *head)
     struct list_head *node, *safe;
     for (node = (head)->next, safe = node->next;
          node != (head) && safe != (head);
-         node = safe->next, safe = node->next) {
-        node->next = safe->next;
-        safe->next = node->next->next;
-        node->next->next = safe;
+         node = node->next, safe = node->next) {
+        node->prev->next = safe;
+        safe->next->prev = node;
 
-        node = safe;
-        safe = node->next;
+        safe->prev = node->prev;
+        node->next = safe->next;
+        safe->next = node;
+        node->prev = safe;
     }
+    return;
 }
 
 
@@ -211,40 +217,47 @@ void q_reverse(struct list_head *head)
     if (head == NULL || list_empty(head))
         return;
     // change every two pointer
-    struct list_head *node, *safe;
-    list_for_each_safe (node, safe, head) {
+    struct list_head *node, *tmp;
+    list_for_each_safe (node, tmp, head) {
         node->next = node->prev;
-        node->prev = safe;
+        node->prev = tmp;
     }
     node->next = node->prev;
-    node->prev = safe;
+    node->prev = tmp;
 }
 
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
 {
+    if (head == NULL || list_empty(head))
+        return;
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
 }
 
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
+    if (head == NULL || list_empty(head))
+        return;
     // if asending;
     // insertion sort
 
     // if descend;
-    q_reverse(head);
+    return;
 }
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
 int q_ascend(struct list_head *head)
 {
+    if (head == NULL || list_empty(head))
+        return 0;
+
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     element_t *entry, *safe;
     int count = 0;
     list_for_each_entry_safe (entry, safe, head, list) {
-        if (entry->value > safe->value) {
+        if (strcmp(entry->value, safe->value) > 0) {
             list_del_init(&(safe->list));
             free(safe->value);
             free(safe);
@@ -259,8 +272,22 @@ int q_ascend(struct list_head *head)
  * the right side of it */
 int q_descend(struct list_head *head)
 {
+    if (head == NULL || list_empty(head))
+        return 0;
+
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    element_t *entry, *safe;
+    int count = 0;
+    list_for_each_entry_safe (entry, safe, head, list) {
+        if (strcmp(entry->value, safe->value) < 0) {
+            list_del_init(&(safe->list));
+            free(safe->value);
+            free(safe);
+        } else {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
