@@ -13,14 +13,20 @@
 element_t *create_new_element(char *s)
 {
     element_t *new_element = (element_t *) malloc(sizeof(element_t));
-    if (new_element == NULL || new_element->value == NULL)
+    if (new_element == NULL) {
+        free(new_element);
         return NULL;
-    // strncpy(new_element->value ,s);
-    size_t dest_size = strlen(new_element->value);
-    if (dest_size > 0) {
-        *(new_element->value) = '\0';
-        strncat(new_element->value, s, dest_size - 1);
     }
+    if (new_element->value == NULL) {
+        free(new_element);
+        return NULL;
+    }
+    new_element->value = strdup(s);
+    if (new_element->value == NULL) {
+        free(new_element);
+        return NULL;
+    }
+    INIT_LIST_HEAD(&(new_element->list));
     return new_element;
 }
 
@@ -48,6 +54,7 @@ void q_free(struct list_head *l)
         return;
     element_t *entry = NULL, *safe = NULL;
     list_for_each_entry_safe (entry, safe, l, list) {
+        list_del(&(entry->list));
         free(entry->value);
         free(entry);
     }
@@ -76,7 +83,7 @@ bool q_insert_head(struct list_head *head, char *s)
 bool q_insert_tail(struct list_head *head, char *s)
 {
     // (head->prev)  new_element  head
-    if (!head)
+    if (head == NULL)
         return false;
 
     element_t *new_element = create_new_element(s);
@@ -154,7 +161,7 @@ bool q_delete_mid(struct list_head *head)
         if (fastptr == head)
             break;
     }
-    list_move(slowptr, head);
+    list_del(slowptr);
     return true;
 }
 
@@ -162,6 +169,16 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (head == NULL || list_empty(head))
+        return false;
+    element_t *entry, *safe;
+    list_for_each_entry_safe (entry, safe, head, list) {
+        if (&(entry->list) != head && strcmp(entry->value, safe->value) == 0) {
+            list_del(&(entry->list));
+            // free(entry->value);
+            // free(entry);
+        }
+    }
     return true;
 }
 
