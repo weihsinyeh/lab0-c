@@ -98,7 +98,7 @@ bool q_insert_tail(struct list_head *head, char *s)
     if (new_element == NULL)
         return false;
 
-    // list_add_tail(&(new_element->list), head->prev);
+    // list_add_tail(&(new_element->list), head->prev); //another way
     list_add_tail(&(new_element->list), head);
     return true;
 }
@@ -136,7 +136,8 @@ int q_size(struct list_head *head)
         return 0;
 
     long count = 0;
-    list_for_each (head->next, head)
+    struct list_head *node;
+    list_for_each (node, head)
         count += 1;
 
     return count;
@@ -232,6 +233,30 @@ void q_reverseK(struct list_head *head, int k)
     if (head == NULL || list_empty(head))
         return;
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
+    // use k nodes first
+    struct list_head *node, *safe;
+
+    list_for_each_safe (node, safe, head) {
+        int count = 0;
+        while (count < k) {
+            count += 1;
+            safe = safe->next;
+            if (safe == head)
+                break;
+        }
+        struct list_head *pre_node = node->prev;
+        struct list_head *post_node = safe->next;
+        pre_node->next = post_node;
+        post_node->prev = pre_node;
+
+        struct list_head *next_head = malloc(sizeof(struct list_head));
+        next_head->next = node;
+        next_head->prev = safe;
+        node->prev = next_head;
+        safe->next = next_head;
+        q_reverse(next_head);
+        list_cut_position(head->next, head->prev, pre_node);
+    }
 }
 
 /* Sort elements of queue in ascending/descending order */
