@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "time.h"
 #ifndef strlcpy
 #define strlcpy(dst, src, sz) snprintf((dst), (sz), "%s", (src))
 #endif
@@ -33,10 +34,14 @@ element_t *create_new_element(char *s)
 void remove_element(element_t *element, char *sp, size_t bufsize)
 {
     if (sp != NULL) {
-        memcpy(sp, element->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
+        size_t len;
+        if (strlen(element->value) < bufsize - 1)
+            len = strlen(element->value);
+        else
+            len = bufsize - 1;
+        memcpy(sp, element->value, len);
+        sp[len] = '\0';
     }
-
     list_del_init(&(element->list));
 }
 
@@ -436,4 +441,28 @@ int q_merge(struct list_head *head, bool descend)
         }
     }
     return queue_size;
+}
+
+/* Fisher-Yates shuffle Algorithm */
+void q_shuffle(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+
+    srand(time(NULL));
+    int n = q_size(head);
+
+    struct list_head *first = head->next;
+    list_del_init(head);
+
+    for (int i = 0; i < n - 1; i++) {
+        int rnd = rand() % (n - i);
+        int dir = rnd > (n - i) / 2 ? 0 : 1;
+        rnd = dir ? n - i - rnd : rnd;
+        for (int j = 0; j < rnd; j++) {
+            first = dir ? first->prev : first->next;
+        }
+        list_move(first->next, head);
+    }
+    list_move(first, head);
 }
