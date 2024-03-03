@@ -65,6 +65,7 @@ void q_free(struct list_head *head) {}
 =======
 void q_free(struct list_head *l)
 {
+    /*
     if (l == NULL)
         return;
 
@@ -75,6 +76,16 @@ void q_free(struct list_head *l)
         test_free(entry);
     }
     list_del_init(l);
+    test_free(l);
+    return;
+    */
+    if (!l)
+        return;
+    element_t *entry, *safe;
+    list_for_each_entry_safe (entry, safe, l, list) {
+        test_free(entry->value);
+        test_free(entry);
+    }
     test_free(l);
     return;
 }
@@ -176,28 +187,35 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return false;
 
-    element_t *entry, *safe;
+    if (list_is_singular(head))
+        return true;
+
+    element_t *entry = list_entry((head)->next, element_t, list);
+    element_t *safe = list_entry((entry)->list.next, element_t, list);
+
     bool hasduplicates = false;
 
-    list_for_each_entry_safe (entry, safe, head, list) {
-        if (&(safe->list) != head && !strcmp(entry->value, safe->value)) {
+    while (&entry->list != (head)) {
+        if (&safe->list != (head) && !strcmp(entry->value, safe->value)) {
             list_del_init(&(entry->list));
             if (entry->value != NULL)
                 test_free(entry->value);
-            test_free(entry);
+            free(entry);
+
             hasduplicates = true;
         } else if (hasduplicates) {
             list_del_init(&(entry->list));
             if (entry->value != NULL)
                 test_free(entry->value);
-            test_free(entry);
+            free(entry);
             hasduplicates = false;
         }
+        entry = safe;
+        safe = list_entry(safe->list.next, element_t, list);
     }
-    test_free(&hasduplicates);
     return true;
 }
 
