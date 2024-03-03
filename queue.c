@@ -253,16 +253,16 @@ void q_reverseK(struct list_head *head, int k)
         return;
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
 
-    int times = q_size(head) / k;
+    int times = q_size(head);
     struct list_head *tail;
 
     LIST_HEAD(tmp);
     LIST_HEAD(new_head);
 
-    for (int i = 0; i < times; i++) {
+    for (int i = 0; i < times; i += k) {
         int j = 0;
         list_for_each (tail, head) {
-            if (j >= k)
+            if (j == k)
                 break;
             j++;
         }
@@ -497,9 +497,9 @@ void q_shuffle(struct list_head *head)
         return;
 
     srand(time(NULL));
-
+    /*
     int len = q_size(head);
-    struct list_head *used_head = q_new();
+    LIST_HEAD(used_head);
     create_used_head(head, used_head);
     while (len) {
         int random = rand() % len;
@@ -509,6 +509,11 @@ void q_shuffle(struct list_head *head)
         // exchange the old and new
         struct list_head *old_prev = old->prev;
         struct list_head *old_next = old->next;
+        old->prev->next = new;
+        old->next->prev = new;
+
+        new->prev->next = old;
+        new->next->prev = old;
 
         old->prev = new->prev;
         old->next = new->next;
@@ -517,5 +522,5 @@ void q_shuffle(struct list_head *head)
         new->next = old_next;
 
         len -= 1;
-    }
+    }*/
 }

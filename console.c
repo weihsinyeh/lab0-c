@@ -249,7 +249,10 @@ static bool do_quit(int argc, char *argv[])
     quit_flag = true;
     return ok;
 }
-
+bool do_hello(int argc, char *argv[])
+{
+    return (bool) printf("Hello, World\n");
+}
 static bool do_help(int argc, char *argv[])
 {
     cmd_element_t *clist = cmd_list;
@@ -427,6 +430,7 @@ void init_cmd()
                 "Display or set options. See 'Options' section for details",
                 "[name val]");
     ADD_COMMAND(quit, "Exit program", "");
+    ADD_COMMAND(hello, "Print hello message", "");
     ADD_COMMAND(source, "Read commands from source file", "");
     ADD_COMMAND(log, "Copy output to file", "file");
     ADD_COMMAND(time, "Time command execution", "cmd arg ...");
