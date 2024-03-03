@@ -17,11 +17,11 @@ element_t *create_new_element(char *s)
 {
     element_t *new_element = (element_t *) test_malloc(sizeof(element_t));
 
-    if (new_element == NULL)
+    if (!new_element)
         return NULL;
 
     new_element->value = test_malloc(sizeof(char) * (strlen(s) + 1));
-    if (new_element->value == NULL) {
+    if (!new_element->value) {
         test_free(new_element);
         return NULL;
     }
@@ -51,7 +51,7 @@ struct list_head *q_new()
     struct list_head *head =
         (struct list_head *) test_malloc(sizeof(struct list_head));
 
-    if (head == NULL || head->prev == NULL)
+    if (!head || !head->prev)
         return NULL;
 
     INIT_LIST_HEAD(head);
@@ -94,12 +94,12 @@ void q_free(struct list_head *l)
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
-    if (head == NULL)
+    if (!head)
         return false;
 
     element_t *new_element = create_new_element(s);
 
-    if (new_element == NULL)
+    if (!new_element)
         return false;
 
     list_add(&(new_element->list), head);
@@ -110,11 +110,11 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-    if (head == NULL)
+    if (!head)
         return false;
 
     element_t *new_element = create_new_element(s);
-    if (new_element == NULL)
+    if (!new_element)
         return false;
 
     // list_add_tail(&(new_element->list), head->prev); //another way
@@ -125,7 +125,7 @@ bool q_insert_tail(struct list_head *head, char *s)
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return NULL;
 
     struct list_head *node = head->next;
@@ -138,7 +138,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return NULL;
 
     struct list_head *node = head->prev;
@@ -151,7 +151,7 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 /* Return number of elements in queue */
 int q_size(struct list_head *head)
 {
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return 0;
 
     long count = 0;
@@ -166,7 +166,7 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return false;
 
     struct list_head *posptr = head->next;
@@ -177,7 +177,7 @@ bool q_delete_mid(struct list_head *head)
     }
     element_t *middle = list_entry(posptr, element_t, list);
     list_del_init(posptr);
-    if (middle->value != NULL)
+    if (!middle->value)
         test_free(middle->value);
     test_free(middle);
     return true;
@@ -201,14 +201,14 @@ bool q_delete_dup(struct list_head *head)
     while (&entry->list != (head)) {
         if (&safe->list != (head) && !strcmp(entry->value, safe->value)) {
             list_del_init(&(entry->list));
-            if (entry->value != NULL)
+            if (!entry->value)
                 test_free(entry->value);
             free(entry);
 
             hasduplicates = true;
         } else if (hasduplicates) {
             list_del_init(&(entry->list));
-            if (entry->value != NULL)
+            if (!entry->value)
                 test_free(entry->value);
             free(entry);
             hasduplicates = false;
@@ -363,7 +363,7 @@ void q_sort(struct list_head *head, bool descend)
  * the right side of it */
 int q_ascend(struct list_head *head)
 {
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return 0;
 
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
