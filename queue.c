@@ -65,7 +65,6 @@ void q_free(struct list_head *head) {}
 =======
 void q_free(struct list_head *l)
 {
-    /*
     if (l == NULL)
         return;
 
@@ -76,16 +75,6 @@ void q_free(struct list_head *l)
         test_free(entry);
     }
     list_del_init(l);
-    test_free(l);
-    return;
-    */
-    if (!l)
-        return;
-    element_t *entry, *safe;
-    list_for_each_entry_safe (entry, safe, l, list) {
-        test_free(entry->value);
-        test_free(entry);
-    }
     test_free(l);
     return;
 }
@@ -177,8 +166,7 @@ bool q_delete_mid(struct list_head *head)
     }
     element_t *middle = list_entry(posptr, element_t, list);
     list_del_init(posptr);
-    if (!middle->value)
-        test_free(middle->value);
+    test_free(middle->value);
     test_free(middle);
     return true;
 }
@@ -201,15 +189,13 @@ bool q_delete_dup(struct list_head *head)
     while (&entry->list != (head)) {
         if (&safe->list != (head) && !strcmp(entry->value, safe->value)) {
             list_del_init(&(entry->list));
-            if (!entry->value)
-                test_free(entry->value);
+            test_free(entry->value);
             free(entry);
 
             hasduplicates = true;
         } else if (hasduplicates) {
             list_del_init(&(entry->list));
-            if (!entry->value)
-                test_free(entry->value);
+            test_free(entry->value);
             free(entry);
             hasduplicates = false;
         }
@@ -350,9 +336,15 @@ void q_sort(struct list_head *head, bool descend)
 
     head->next = mergeSortList(head->next, descend);
     head->next->prev = head;
-    struct list_head *iter = head;
-    while (iter->next != NULL)
+
+    struct list_head *iter = head->next;
+    struct list_head *pre = head;
+    while (iter->next) {
+        iter->prev = pre;
         iter = iter->next;
+        pre = pre->next;
+    }
+    iter->prev = pre;
     iter->next = head;
     head->prev = iter;
 
