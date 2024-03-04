@@ -281,24 +281,14 @@ struct list_head *merge(struct list_head *l1,
         return l1;
     if (!l1)
         return l2;
-    if (descend == false) {
-        if (strcmp(list_entry(l1, element_t, list)->value,
-                   list_entry(l2, element_t, list)->value) < 0) {
-            l1->next = merge(l1->next, l2, descend);
-            return l1;
-        } else {
-            l2->next = merge(l1, l2->next, descend);
-            return l2;
-        }
+
+    if (descend ^ (strcmp(list_entry(l1, element_t, list)->value,
+                          list_entry(l2, element_t, list)->value) < 0)) {
+        l1->next = merge(l1->next, l2, descend);
+        return l1;
     } else {
-        if (strcmp(list_entry(l1, element_t, list)->value,
-                   list_entry(l2, element_t, list)->value) > 0) {
-            l1->next = merge(l1->next, l2, descend);
-            return l1;
-        } else {
-            l2->next = merge(l1, l2->next, descend);
-            return l2;
-        }
+        l2->next = merge(l1, l2->next, descend);
+        return l2;
     }
 }
 struct list_head *mergeSortList(struct list_head *head, bool descend)
