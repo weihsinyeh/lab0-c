@@ -272,72 +272,38 @@ void q_reverseK(struct list_head *head, int k)
     }
     list_splice_init(&new_head, head);
 }
-struct list_head *merge(struct list_head *l1,
-                        struct list_head *l2,
-                        bool descend)
+
+void mergeTwoLists(struct list_head *L1, struct list_head *L2, bool descend)
 {
-    // merge with recursive
-    if (!l2)
-        return l1;
-    if (!l1)
-        return l2;
-
-    if (descend ^ (strcmp(list_entry(l1, element_t, list)->value,
-                          list_entry(l2, element_t, list)->value) < 0)) {
-        l1->next = merge(l1->next, l2, descend);
-        return l1;
-    } else {
-        l2->next = merge(l1, l2->next, descend);
-        return l2;
+    if (!L1 || !L2)
+        return;
+    struct list_head head;
+    INIT_LIST_HEAD(&head);
+    while (!list_empty(L1) && !list_empty(L2)) {
+        element_t *e1 = list_first_entry(L1, element_t, list);
+        element_t *e2 = list_first_entry(L2, element_t, list);
+        struct list_head *node = (descend ^ (strcmp(e1->value, e2->value) < 0))
+                                     ? L1->next
+                                     : L2->next;
+        list_move_tail(node, &head);
     }
-}
-struct list_head *mergeSortList(struct list_head *head, bool descend)
-{
-    // merge sort
-    if (!head || !head->next)
-        return head;
-
-    struct list_head *fast = head->next;
-    struct list_head *slow = head;
-
-    // split list
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    fast = slow->next;
-    slow->next = NULL;
-
-    // sort each list
-    struct list_head *l1 = mergeSortList(head, descend);
-    struct list_head *l2 = mergeSortList(fast, descend);
-
-    // merge sorted l1 and sorted l2
-    return merge(l1, l2, descend);
+    list_splice_tail_init(list_empty(L1) ? L2 : L1, &head);
+    list_splice(&head, L1);
 }
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
     if (!head || list_empty(head) || list_is_singular(head))
         return;
-
-    head->prev->next = NULL;
-
-    head->next = mergeSortList(head->next, descend);
-    head->next->prev = head;
-
-    struct list_head *iter = head->next;
-    struct list_head *pre = head;
-    while (iter->next) {
-        iter->prev = pre;
-        iter = iter->next;
-        pre = pre->next;
-    }
-    iter->prev = pre;
-    iter->next = head;
-    head->prev = iter;
-
-    return;
+    struct list_head *slow = head;
+    struct list_head *fast = head->next;
+    for (; fast != head && fast->next != head; fast = fast->next->next)
+        slow = slow->next;
+    struct list_head left;
+    list_cut_position(&left, head, slow);
+    q_sort(&left, descend);
+    q_sort(head, descend);
+    mergeTwoLists(head, &left, descend);
 }
 
 /* Remove every node which has a node with a strictly less value anywhere to
