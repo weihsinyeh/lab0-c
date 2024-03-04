@@ -33,7 +33,7 @@ element_t *create_new_element(char *s)
 
 void remove_element(element_t *element, char *sp, size_t bufsize)
 {
-    if (sp != NULL) {
+    if (sp) {
         size_t len;
         if (strlen(element->value) < bufsize - 1)
             len = strlen(element->value);
@@ -65,7 +65,7 @@ void q_free(struct list_head *head) {}
 =======
 void q_free(struct list_head *l)
 {
-    if (l == NULL)
+    if (!l)
         return;
 
     element_t *entry = NULL, *safe = NULL;
@@ -209,7 +209,7 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
-    if (head == NULL || list_empty(head) || list_is_singular(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
 
     struct list_head *first, *second;
@@ -232,7 +232,7 @@ void q_swap(struct list_head *head)
 /* Reverse elements in queue */
 void q_reverse(struct list_head *head)
 {
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head))
         return;
     // change every two pointer
     struct list_head *node, *tmp;
@@ -249,7 +249,7 @@ void q_reverse(struct list_head *head)
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
 {
-    if ((head == NULL || list_empty(head)) || k <= 1)
+    if ((!head || list_empty(head)) || k <= 1)
         return;
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
 
@@ -328,10 +328,9 @@ struct list_head *mergeSortList(struct list_head *head, bool descend)
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
-    if (head == NULL || list_empty(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
-    if (list_is_singular(head))
-        return;
+
     head->prev->next = NULL;
 
     head->next = mergeSortList(head->next, descend);
@@ -385,7 +384,7 @@ int q_ascend(struct list_head *head)
  * the right side of it */
 int q_descend(struct list_head *head)
 {
-    if ((head == NULL || list_empty(head)) || list_is_singular(head))
+    if ((!head || list_empty(head)) || list_is_singular(head))
         return 0;
 
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
@@ -497,9 +496,9 @@ void q_shuffle(struct list_head *head)
         return;
 
     srand(time(NULL));
-    /*
+
     int len = q_size(head);
-    LIST_HEAD(used_head);
+    struct list_head *used_head = q_new();
     create_used_head(head, used_head);
     while (len) {
         int random = rand() % len;
@@ -509,11 +508,6 @@ void q_shuffle(struct list_head *head)
         // exchange the old and new
         struct list_head *old_prev = old->prev;
         struct list_head *old_next = old->next;
-        old->prev->next = new;
-        old->next->prev = new;
-
-        new->prev->next = old;
-        new->next->prev = old;
 
         old->prev = new->prev;
         old->next = new->next;
@@ -522,5 +516,5 @@ void q_shuffle(struct list_head *head)
         new->next = old_next;
 
         len -= 1;
-    }*/
+    }
 }
