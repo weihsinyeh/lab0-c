@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "harness.h"
 #include "time.h"
 #ifndef strlcpy
 #define strlcpy(dst, src, sz) snprintf((dst), (sz), "%s", (src))
@@ -16,14 +17,14 @@
 /* Create an new element */
 element_t *create_new_element(char *s)
 {
-    element_t *new_element = (element_t *) test_malloc(sizeof(element_t));
+    element_t *new_element = (element_t *) malloc(sizeof(element_t));
 
     if (!new_element)
         return NULL;
 
-    new_element->value = test_malloc(sizeof(char) * (strlen(s) + 1));
+    new_element->value = malloc(sizeof(char) * (strlen(s) + 1));
     if (!new_element->value) {
-        test_free(new_element);
+        free(new_element);
         return NULL;
     }
 
@@ -51,7 +52,7 @@ void remove_element(element_t *element, char *sp, size_t bufsize)
 struct list_head *q_new()
 {
     struct list_head *head =
-        (struct list_head *) test_malloc(sizeof(struct list_head));
+        (struct list_head *) malloc(sizeof(struct list_head));
 
     if (!head || !head->prev)
         return NULL;
@@ -70,11 +71,11 @@ void q_free(struct list_head *l)
     element_t *entry = NULL, *safe = NULL;
     list_for_each_entry_safe (entry, safe, l, list) {
         list_del(&(entry->list));
-        test_free(entry->value);
-        test_free(entry);
+        free(entry->value);
+        free(entry);
     }
     list_del_init(l);
-    test_free(l);
+    free(l);
     return;
 }
 
@@ -167,8 +168,8 @@ bool q_delete_mid(struct list_head *head)
     }
     element_t *middle = list_entry(posptr, element_t, list);
     list_del_init(posptr);
-    test_free(middle->value);
-    test_free(middle);
+    free(middle->value);
+    free(middle);
     return true;
 }
 
@@ -190,13 +191,13 @@ bool q_delete_dup(struct list_head *head)
     while (&entry->list != (head)) {
         if (&safe->list != (head) && !strcmp(entry->value, safe->value)) {
             list_del_init(&(entry->list));
-            test_free(entry->value);
+            free(entry->value);
             free(entry);
 
             hasduplicates = true;
         } else if (hasduplicates) {
             list_del_init(&(entry->list));
-            test_free(entry->value);
+            free(entry->value);
             free(entry);
             hasduplicates = false;
         }
@@ -324,8 +325,8 @@ int q_ascend(struct list_head *head)
             element_t *second = list_entry(safe, element_t, list);
             if (strcmp(first->value, second->value) >= 0) {
                 list_del_init(&(first->list));
-                test_free(first->value);
-                test_free(first);
+                free(first->value);
+                free(first);
                 nothandle = false;
             }
             entry = safe;
@@ -354,8 +355,8 @@ int q_descend(struct list_head *head)
             element_t *second = list_entry(safe, element_t, list);
             if (strcmp(first->value, second->value) <= 0) {
                 list_del_init(&(first->list));
-                test_free(first->value);
-                test_free(first);
+                free(first->value);
+                free(first);
                 nothandle = false;
             }
             entry = safe;
