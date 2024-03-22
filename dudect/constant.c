@@ -1,8 +1,9 @@
-#include <assert.h>
-#include <stdint.h>
-#include <string.h>
-
 #include "constant.h"
+#include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include "cpucycles.h"
 #include "queue.h"
 #include "random.h"
@@ -66,7 +67,30 @@ void prepare_inputs(uint8_t *input_data, uint8_t *classes)
         random_string[i][7] = 0;
     }
 }
+static int cmp(const int64_t *a, const int64_t *b)
+{
+    if (*a == *b)
+        return 0;
+    return (*a > *b) ? 1 : -1;
+}
 
+static int64_t percentile(int64_t *a, double which, size_t size)
+{
+    size_t array_position = (size_t)((double) size * (double) which);
+    assert(array_position < size);
+    return a[array_position];
+}
+
+void prepare_percentiles(int64_t *exec_times, int64_t *percentiles)
+{
+    qsort(exec_times, N_MEASURES, sizeof(int64_t),
+          (int (*)(const void *, const void *)) cmp);
+    for (size_t i = 0; i < N_PERCENTILES; i++) {
+        percentiles[i] = percentile(
+            exec_times, 1 - (pow(0.5, 10 * (double) (i + 1) / N_PERCENTILES)),
+            N_MEASURES);
+    }
+}
 bool measure(int64_t *before_ticks,
              int64_t *after_ticks,
              uint8_t *input_data,
