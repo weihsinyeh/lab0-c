@@ -99,7 +99,6 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-
     if (!head)
         return false;
 
@@ -128,7 +127,6 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 /* Remove an element from tail of queue */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-
     if (!head || list_empty(head))
         return NULL;
 
@@ -409,70 +407,45 @@ int q_merge(struct list_head *head, bool descend)
     }
     return queue_size;
 }
-void create_used_head(struct list_head *head, struct list_head *used_head)
+static inline void list_replace(struct list_head *old, struct list_head *new)
 {
-    struct list_head *node;
-    for (node = head->next; node != (head); node = node->next) {
-        char *used = "unused";
-        q_insert_tail(used_head, used);
-    }
-}
-struct list_head *find_old(struct list_head *head,
-                           int old,
-                           struct list_head *used_head)
-{
-    int count = 0;
-    struct list_head *node;
-    struct list_head *update_iter = used_head->next;
-    for (node = head->next; node != (head); node = node->next) {
-        char *used = "used";
-        list_entry(update_iter, element_t, list)->value = used;
-        if (old == count)
-            return node;
-        count += 1;
-    }
-    return node;
+    new->next = old->next;
+    new->next->prev = new;
+    new->prev = old->prev;
+    new->prev->next = new;
 }
 
-struct list_head *find_new(struct list_head *head, struct list_head *used_head)
+static inline void list_swap(struct list_head *entry1, struct list_head *entry2)
 {
-    struct list_head *node, *new = head;
-    char *not_used = "unused";
-    for (node = used_head->next; node != (used_head); node = node->prev) {
-        new = new->next;
-        if (!strcmp(list_entry(node, element_t, list)->value, not_used)) {
-            // find a node that not used;
-            return new;
-        }
-    }
-    return new;
+    struct list_head *pos = entry2->prev;
+
+    list_del(entry2);
+    list_replace(entry1, entry2);
+    if (pos == entry1)
+        pos = entry2;
+    list_add(entry1, pos);
 }
 /* Fisher-Yates shuffle Algorithm */
 void q_shuffle(struct list_head *head)
 {
-    if (!head || list_empty(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
 
-    srand(time(NULL));
-
     int len = q_size(head);
-    struct list_head *used_head = q_new();
-    create_used_head(head, used_head);
-    while (len) {
-        int random = rand() % len;
+    struct list_head *tail = head->prev;
+    struct list_head *safe = tail->prev;
 
-        struct list_head *old = find_old(head, random, used_head);
-        struct list_head *new = find_new(head, used_head);
-        // exchange the old and new
-        struct list_head *old_prev = old->prev;
-        struct list_head *old_next = old->next;
-
-        old->prev = new->prev;
-        old->next = new->next;
-
-        new->prev = old_prev;
-        new->next = old_next;
-
-        len -= 1;
+    srand(time(NULL));
+    for (; len != 0; safe = safe->prev) {
+        int random = rand() % (len--);
+        struct list_head *iter = head;
+        do {
+            iter = iter->next;
+        } while (random--);
+        if (iter == tail)
+            continue;
+        list_swap(iter, tail);
+        tail = safe;
     }
+    return;
 }
