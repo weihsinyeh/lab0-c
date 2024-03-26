@@ -435,7 +435,6 @@ void q_shuffle(struct list_head *head)
     struct list_head *tail = head->prev;
     struct list_head *safe = tail->prev;
 
-    srand(time(NULL));
     for (; len != 0; safe = safe->prev) {
         int random = rand() % (len--);
         struct list_head *iter = head;
