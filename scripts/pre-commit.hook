@@ -16,6 +16,7 @@ CPPCHECK_suppresses="--inline-suppr harness.c \
 --suppress=nullPointerRedundantCheck:harness.c \
 --suppress=nullPointer:queue.c \
 --suppress=nullPointer:qtest.c \
+--suppress=nullPointer:zobrist.c \
 --suppress=returnDanglingLifetime:report.c \
 --suppress=constParameterCallback:console.c \
 --suppress=constParameterPointer:console.c \
@@ -67,7 +68,6 @@ SHA1SUM=$(which sha1sum)
 if [ $? -ne 0 ]; then
     SHA1SUM=shasum
 fi
-
 FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "\.(c|cpp|h)$")
 for FILE in $FILES; do
     nf=$(git checkout-index --temp $FILE | cut -f 1)

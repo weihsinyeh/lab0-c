@@ -62,18 +62,6 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
     h->pprev = NULL;
 }
 
-/**
- * hlist_unhashed - Has node been removed from list and reinitialized?
- * @h: Node to be checked
- *
- * Not that not all removal functions will leave a node in unhashed
- * state.  For example, hlist_nulls_del_init_rcu() does leave the
- * node in unhashed state, but hlist_nulls_del() does not.
- */
-static inline int hlist_unhashed(const struct hlist_node *h)
-{
-    return !h->pprev;
-}
 
 /**
  * hlist_empty - Is the specified hlist_head structure an empty hlist?
